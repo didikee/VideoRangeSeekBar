@@ -33,7 +33,7 @@ public class VideoTimelinePlayView extends View {
     private float progressLeft;
     private float progressRight = 1;
     private Paint paint;
-    private Paint paint2;
+    private Paint shadowPaint;
     private boolean pressedLeft;
     private boolean pressedRight;
     private boolean pressedPlay;
@@ -58,6 +58,10 @@ public class VideoTimelinePlayView extends View {
     private Drawable drawableRight;
     private int lastWidth;
 
+    //一些间距
+    private int bgPaddingLeft, bgPaddingRight;// 背景的间距
+    private int viewHeight;//view的高度，被tg写死了
+
     public interface VideoTimelineViewDelegate {
         void onLeftProgressChanged(float progress);
 
@@ -74,12 +78,15 @@ public class VideoTimelinePlayView extends View {
         super(context);
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(0xffffffff);
-        paint2 = new Paint();
-        paint2.setColor(0x7f000000);
+        shadowPaint = new Paint();
+        shadowPaint.setColor(0x7f000000);
         drawableLeft = context.getResources().getDrawable(R.drawable.video_cropleft);
         drawableLeft.setColorFilter(new PorterDuffColorFilter(0xff000000, PorterDuff.Mode.MULTIPLY));
         drawableRight = context.getResources().getDrawable(R.drawable.video_cropright);
         drawableRight.setColorFilter(new PorterDuffColorFilter(0xff000000, PorterDuff.Mode.MULTIPLY));
+
+        bgPaddingLeft = bgPaddingRight = AndroidUtilities.dp(16);
+        viewHeight = AndroidUtilities.dp(56);
     }
 
     public float getProgress() {
@@ -123,9 +130,9 @@ public class VideoTimelinePlayView extends View {
         float y = event.getY();
 
         int width = getMeasuredWidth() - AndroidUtilities.dp(32);
-        int startX = (int) (width * progressLeft) + AndroidUtilities.dp(16);
+        int startX = (int) (width * progressLeft) + bgPaddingLeft;
         int playX = (int) (width * (progressLeft + (progressRight - progressLeft) * playProgress)) + AndroidUtilities.dp(16);
-        int endX = (int) (width * progressRight) + AndroidUtilities.dp(16);
+        int endX = (int) (width * progressRight) + bgPaddingRight;
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             getParent().requestDisallowInterceptTouchEvent(true);
@@ -134,8 +141,8 @@ public class VideoTimelinePlayView extends View {
             }
             int additionWidth = AndroidUtilities.dp(12);//默认是12
             int additionWidthPlay = AndroidUtilities.dp(8);
-            if ( y >= 0 && y <= getMeasuredHeight()){
-                if (x <= startX + additionWidth){
+            if (y >= 0 && y <= getMeasuredHeight()) {
+                if (x <= startX + additionWidth) {
                     if (delegate != null) {
                         delegate.didStartDragging();
                     }
@@ -145,7 +152,7 @@ public class VideoTimelinePlayView extends View {
                     invalidate();
                     return true;
                 }
-                if (x >= endX - additionWidth){
+                if (x >= endX - additionWidth) {
                     if (delegate != null) {
                         delegate.didStartDragging();
                     }
@@ -155,7 +162,7 @@ public class VideoTimelinePlayView extends View {
                     invalidate();
                     return true;
                 }
-                if (playX - additionWidthPlay <= x && x <= playX + additionWidthPlay){
+                if (playX - additionWidthPlay <= x && x <= playX + additionWidthPlay) {
                     if (delegate != null) {
                         delegate.didStartDragging();
                     }
@@ -231,12 +238,12 @@ public class VideoTimelinePlayView extends View {
                 return true;
             } else if (pressedLeft) {
                 startX = (int) (x - pressDx);
-                if (startX < AndroidUtilities.dp(16)) {
-                    startX = AndroidUtilities.dp(16);
+                if (startX < bgPaddingLeft) {
+                    startX = bgPaddingLeft;
                 } else if (startX > endX) {
                     startX = endX;
                 }
-                progressLeft = (float) (startX - AndroidUtilities.dp(16)) / (float) width;
+                progressLeft = (float) (startX - bgPaddingLeft) / (float) width;
                 if (progressRight - progressLeft > maxProgressDiff) {
                     progressRight = progressLeft + maxProgressDiff;
                 } else if (minProgressDiff != 0 && progressRight - progressLeft < minProgressDiff) {
@@ -254,10 +261,10 @@ public class VideoTimelinePlayView extends View {
                 endX = (int) (x - pressDx);
                 if (endX < startX) {
                     endX = startX;
-                } else if (endX > width + AndroidUtilities.dp(16)) {
-                    endX = width + AndroidUtilities.dp(16);
+                } else if (endX > width + bgPaddingRight) {
+                    endX = width + bgPaddingRight;
                 }
-                progressRight = (float) (endX - AndroidUtilities.dp(16)) / (float) width;
+                progressRight = (float) (endX - bgPaddingRight) / (float) width;
                 if (progressRight - progressLeft > maxProgressDiff) {
                     progressLeft = progressRight - maxProgressDiff;
                 } else if (minProgressDiff != 0 && progressRight - progressLeft < minProgressDiff) {
@@ -421,9 +428,10 @@ public class VideoTimelinePlayView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        // bg padding = 16dp
         int width = getMeasuredWidth() - AndroidUtilities.dp(36);
-        int startX = (int) (width * progressLeft) + AndroidUtilities.dp(16);
-        int endX = (int) (width * progressRight) + AndroidUtilities.dp(16);
+        int startX = (int) (width * progressLeft) + bgPaddingLeft;
+        int endX = (int) (width * progressRight) + bgPaddingRight;
 
         canvas.save();
         canvas.clipRect(AndroidUtilities.dp(16), AndroidUtilities.dp(4), width + AndroidUtilities.dp(20), AndroidUtilities.dp(48));
@@ -450,8 +458,8 @@ public class VideoTimelinePlayView extends View {
         int top = AndroidUtilities.dp(2 + 4);
         int end = AndroidUtilities.dp(48);
 
-        canvas.drawRect(AndroidUtilities.dp(16), top, startX, AndroidUtilities.dp(46), paint2);
-        canvas.drawRect(endX + AndroidUtilities.dp(4), top, AndroidUtilities.dp(16) + width + AndroidUtilities.dp(4), AndroidUtilities.dp(46), paint2);
+        canvas.drawRect(bgPaddingLeft, top, startX, AndroidUtilities.dp(46), shadowPaint);
+        canvas.drawRect(endX + AndroidUtilities.dp(4), top, AndroidUtilities.dp(16) + width + AndroidUtilities.dp(4), AndroidUtilities.dp(46), shadowPaint);
 
         canvas.drawRect(startX, AndroidUtilities.dp(4), startX + AndroidUtilities.dp(2), end, paint);
         canvas.drawRect(endX + AndroidUtilities.dp(2), AndroidUtilities.dp(4), endX + AndroidUtilities.dp(4), end, paint);
@@ -469,17 +477,19 @@ public class VideoTimelinePlayView extends View {
         drawableRight.setBounds(endX + AndroidUtilities.dp(2), AndroidUtilities.dp(4) + (AndroidUtilities.dp(44) - AndroidUtilities.dp(18)) / 2, endX + AndroidUtilities.dp(12), (AndroidUtilities.dp(44) - AndroidUtilities.dp(18)) / 2 + AndroidUtilities.dp(18 + 4));
         drawableRight.draw(canvas);
 
+        // 画中间的play 标杆
         float cx = AndroidUtilities.dp(18) + width * (progressLeft + (progressRight - progressLeft) * playProgress);
         rect3.set(cx - AndroidUtilities.dp(1.5f), AndroidUtilities.dp(2), cx + AndroidUtilities.dp(1.5f), AndroidUtilities.dp(50));
-        canvas.drawRoundRect(rect3, AndroidUtilities.dp(1), AndroidUtilities.dp(1), paint2);
-        canvas.drawCircle(cx, AndroidUtilities.dp(52), AndroidUtilities.dp(3.5f), paint2);
+        canvas.drawRoundRect(rect3, AndroidUtilities.dp(1), AndroidUtilities.dp(1), shadowPaint);
+        canvas.drawCircle(cx, AndroidUtilities.dp(52), AndroidUtilities.dp(3.5f), shadowPaint);
 
+        // 画中间的play 圆形
         rect3.set(cx - AndroidUtilities.dp(1), AndroidUtilities.dp(2), cx + AndroidUtilities.dp(1), AndroidUtilities.dp(50));
         canvas.drawRoundRect(rect3, AndroidUtilities.dp(1), AndroidUtilities.dp(1), paint);
         canvas.drawCircle(cx, AndroidUtilities.dp(52), AndroidUtilities.dp(3), paint);
     }
 
-    private void log(String message){
-        Log.d("VideoTimeLine",message);
+    private void log(String message) {
+        Log.d("VideoTimeLine", message);
     }
 }
