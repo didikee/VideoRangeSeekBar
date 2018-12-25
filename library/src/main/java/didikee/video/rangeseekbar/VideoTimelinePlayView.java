@@ -62,7 +62,7 @@ public class VideoTimelinePlayView extends View {
     private int bgPaddingLeft, bgPaddingRight;// 背景的间距
     private int viewHeight;//view的高度，被tg写死了
     private int centerLinePaddingTop;//2dp
-    private int lineTopPadding, lineBottomPadding;//上下两条横线的位置
+    private int lineTopPadding;//上下两条横线的位置
     private int radius;//画圆角的半径
 
     public interface VideoTimelineViewDelegate {
@@ -89,7 +89,7 @@ public class VideoTimelinePlayView extends View {
         drawableRight.setColorFilter(new PorterDuffColorFilter(0xff000000, PorterDuff.Mode.MULTIPLY));
 
         bgPaddingLeft = bgPaddingRight = AndroidUtilities.dp(16);
-        lineTopPadding = lineBottomPadding = AndroidUtilities.dp(4);
+        lineTopPadding = AndroidUtilities.dp(4);
         centerLinePaddingTop = AndroidUtilities.dp(2);
         radius = AndroidUtilities.dp(2);
     }
@@ -462,7 +462,7 @@ public class VideoTimelinePlayView extends View {
 
         int lineThickness = AndroidUtilities.dp(2);
         // 以阴影的上边界为准，4位padding，2是line的厚度
-        int top = AndroidUtilities.dp(2 + 4);
+        int top = lineTopPadding + lineThickness;// 4+2
         int end = viewHeight - AndroidUtilities.dp(8);
 
         canvas.save();
