@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "didStopDragging");
             }
         });
-        rootLayout.addView(videoTimelinePlayView, ViewGroup.LayoutParams.MATCH_PARENT, AndroidUtilities.dp(56));
+        rootLayout.addView(videoTimelinePlayView, ViewGroup.LayoutParams.MATCH_PARENT, AndroidUtilities.dp(64));
         videoTimelinePlayView.setVideoPath(videoPath);
     }
 
