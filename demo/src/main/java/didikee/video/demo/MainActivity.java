@@ -10,14 +10,14 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import didikee.github.helper.utils.UriUtil;
-import didikee.video.rangeseekbar.AndroidUtilities;
-import didikee.video.rangeseekbar.VideoTimelinePlayView;
+import didikee.video.rangeseekbar.VTLPVUtil;
+import didikee.video.rangeseekbar.VideoRangeSeekBar;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private LinearLayout rootLayout;
-    private VideoTimelinePlayView videoTimelinePlayView;
+    private VideoRangeSeekBar videoRangeSeekBar;
     private static final int REQUEST_FOR_VIDEO = 3333;
 
     @Override
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         rootLayout = findViewById(R.id.root_layout);
-        AndroidUtilities.check(this);
+        VTLPVUtil.check(this);
 
     }
 
@@ -45,12 +45,12 @@ public class MainActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(videoPath)) {
             return;
         }
-        if (videoTimelinePlayView != null) {
+        if (videoRangeSeekBar != null) {
             return;
         }
 
-        videoTimelinePlayView = new VideoTimelinePlayView(this);
-        videoTimelinePlayView.setDelegate(new VideoTimelinePlayView.VideoTimelineViewDelegate() {
+        videoRangeSeekBar = new VideoRangeSeekBar(this);
+        videoRangeSeekBar.setDelegate(new VideoRangeSeekBar.VideoTimelineViewDelegate() {
             @Override
             public void onLeftProgressChanged(float progress) {
                 Log.d(TAG, "onLeftProgressChanged: " + progress);
@@ -76,8 +76,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "didStopDragging");
             }
         });
-        rootLayout.addView(videoTimelinePlayView, ViewGroup.LayoutParams.MATCH_PARENT, AndroidUtilities.dp(64));
-        videoTimelinePlayView.setVideoPath(videoPath);
+        rootLayout.addView(videoRangeSeekBar, ViewGroup.LayoutParams.MATCH_PARENT, VTLPVUtil.dp(64));
+        videoRangeSeekBar.setVideoPath(videoPath);
     }
 
     @Override
