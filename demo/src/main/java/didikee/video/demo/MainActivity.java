@@ -9,9 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.github.video.view.VideoRangeSeekBar;
+
+import didikee.github.helper.utils.DisplayUtil;
 import didikee.github.helper.utils.UriUtil;
-import didikee.video.rangeseekbar.VTLPVUtil;
-import didikee.video.rangeseekbar.VideoRangeSeekBar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,8 +38,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         rootLayout = findViewById(R.id.root_layout);
-        VTLPVUtil.check(this);
-
     }
 
     private void initVideoView(String videoPath) {
@@ -50,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         videoRangeSeekBar = new VideoRangeSeekBar(this);
-        videoRangeSeekBar.setDelegate(new VideoRangeSeekBar.VideoTimelineViewDelegate() {
+        videoRangeSeekBar.setOnVideoRangeSeekBarListener(new VideoRangeSeekBar.VideoRangeSeekBarListener() {
             @Override
             public void onLeftProgressChanged(float progress) {
                 Log.d(TAG, "onLeftProgressChanged: " + progress);
@@ -76,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "didStopDragging");
             }
         });
-        rootLayout.addView(videoRangeSeekBar, ViewGroup.LayoutParams.MATCH_PARENT, VTLPVUtil.dp(64));
+        rootLayout.addView(videoRangeSeekBar, ViewGroup.LayoutParams.MATCH_PARENT, DisplayUtil.dp2px(this, 64));
         videoRangeSeekBar.setVideoPath(videoPath);
     }
 
