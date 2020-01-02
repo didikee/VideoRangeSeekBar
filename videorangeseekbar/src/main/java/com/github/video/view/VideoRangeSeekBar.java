@@ -10,8 +10,6 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.Nullable;
@@ -46,7 +44,8 @@ public class VideoRangeSeekBar extends View {
     private boolean pressedPlay;
     private float playProgress = 0f;
     private float pressDx;
-    private MediaMetadataRetriever mediaMetadataRetriever;
+    private FrameHandler frameHandler;
+    //    private MediaMetadataRetriever mediaMetadataRetriever;
     private VideoRangeSeekBarListener delegate;
     private ArrayList<Bitmap> frames = new ArrayList<>();
     private AsyncTask<Integer, Integer, Bitmap> currentTask;
@@ -140,7 +139,7 @@ public class VideoRangeSeekBar extends View {
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             getParent().requestDisallowInterceptTouchEvent(true);
-            if (mediaMetadataRetriever == null) {
+            if (!isFrameHandlerEnable()) {
                 return false;
             }
             int additionWidth = dp(12);//默认是12
@@ -456,33 +455,41 @@ public class VideoRangeSeekBar extends View {
         whitePaint.setColor(color);
     }
 
-    public void setVideoPath(String path) {
+    public void startWithHandler(FrameHandler handler) {
+        this.frameHandler = handler;
         destroy();
-        mediaMetadataRetriever = new MediaMetadataRetriever();
         progressLeft = 0.0f;
         progressRight = 1.0f;
-        try {
-            mediaMetadataRetriever.setDataSource(path);
-            String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            videoLength = Long.parseLong(duration);
-        } catch (Exception e) {
-        }
         invalidate();
     }
 
-    public void setVideoSource(Context context, Uri videoUri) {
-        destroy();
-        mediaMetadataRetriever = new MediaMetadataRetriever();
-        progressLeft = 0.0f;
-        progressRight = 1.0f;
-        try {
-            mediaMetadataRetriever.setDataSource(context, videoUri);
-            String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            videoLength = Long.parseLong(duration);
-        } catch (Exception e) {
-        }
-        invalidate();
-    }
+//    public void setVideoPath(String path) {
+//        destroy();
+//        mediaMetadataRetriever = new MediaMetadataRetriever();
+//        progressLeft = 0.0f;
+//        progressRight = 1.0f;
+//        try {
+//            mediaMetadataRetriever.setDataSource(path);
+//            String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+//            videoLength = Long.parseLong(duration);
+//        } catch (Exception e) {
+//        }
+//        invalidate();
+//    }
+
+//    public void setVideoSource(Context context, Uri videoUri) {
+//        destroy();
+//        mediaMetadataRetriever = new MediaMetadataRetriever();
+//        progressLeft = 0.0f;
+//        progressRight = 1.0f;
+//        try {
+//            mediaMetadataRetriever.setDataSource(context, videoUri);
+//            String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+//            videoLength = Long.parseLong(duration);
+//        } catch (Exception e) {
+//        }
+//        invalidate();
+//    }
 
     public void setOnVideoRangeSeekBarListener(VideoRangeSeekBarListener delegate) {
         this.delegate = delegate;
@@ -496,10 +503,23 @@ public class VideoRangeSeekBar extends View {
         }
     }
 
+    public FrameHandler getFrameHandler() {
+        return frameHandler;
+    }
+
+    // 判断frame handler 是否正常可用
+    public boolean isFrameHandlerEnable() {
+        return frameHandler != null && frameHandler.isAvailable();
+    }
+
     private void reloadFrames(int frameNum) {
-        if (mediaMetadataRetriever == null) {
+        if (!isFrameHandlerEnable()) {
             return;
         }
+        loadFrames(frameNum);
+    }
+
+    protected void loadFrames(int frameNum) {
         if (frameNum == 0) {
             if (isRoundFrames) {
                 frameHeight = frameWidth = dp(56);
@@ -522,7 +542,7 @@ public class VideoRangeSeekBar extends View {
                     return null;
                 }
                 try {
-                    bitmap = mediaMetadataRetriever.getFrameAtTime(frameTimeOffset * frameNum * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                    bitmap = frameHandler.getFrameAtTime(frameTimeOffset * frameNum);
                     if (isCancelled()) {
                         return null;
                     }
@@ -560,14 +580,8 @@ public class VideoRangeSeekBar extends View {
     }
 
     public void destroy() {
-        synchronized (sync) {
-            try {
-                if (mediaMetadataRetriever != null) {
-                    mediaMetadataRetriever.release();
-                    mediaMetadataRetriever = null;
-                }
-            } catch (Exception e) {
-            }
+        if (frameHandler != null) {
+            frameHandler.onDestroy();
         }
         for (Bitmap bitmap : frames) {
             if (bitmap != null) {
