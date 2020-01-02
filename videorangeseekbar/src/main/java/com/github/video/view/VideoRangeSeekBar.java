@@ -456,10 +456,10 @@ public class VideoRangeSeekBar extends View {
     }
 
     public void startWithHandler(FrameHandler handler) {
-        this.frameHandler = handler;
         destroy();
         progressLeft = 0.0f;
         progressRight = 1.0f;
+        this.frameHandler = handler;
         invalidate();
     }
 
