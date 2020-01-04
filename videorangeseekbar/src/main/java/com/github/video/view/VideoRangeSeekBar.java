@@ -10,6 +10,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.Nullable;
@@ -221,96 +222,7 @@ public class VideoRangeSeekBar extends View {
                     return true;
                 }
 
-//                if (minDistance == startDistance) {
-//                    if (delegate != null) {
-//                        delegate.didStartDragging();
-//                    }
-//                    log("pressedLeft");
-//                    pressedLeft = true;
-//                    pressDx = (int) (x - startX);
-//                    invalidate();
-//                    return true;
-//                } else if (minDistance == endDistance) {
-//                    if (delegate != null) {
-//                        delegate.didStartDragging();
-//                    }
-//                    log("pressedRight");
-//                    pressedRight = true;
-//                    pressDx = (int) (x - endX);
-//                    invalidate();
-//                    return true;
-//                } else {
-//                    if (minDistance < additionWidthPlay) {
-//                        if (delegate != null) {
-//                            delegate.didStartDragging();
-//                        }
-//                        log("pressedPlay");
-//                        pressedPlay = true;
-//                        pressDx = (int) (x - playX);
-//                        invalidate();
-//                        return true;
-//                    }
-//                }
-
-//                if (x <= startX + additionWidth) {
-//                    if (delegate != null) {
-//                        delegate.didStartDragging();
-//                    }
-//                    log("pressedLeft");
-//                    pressedLeft = true;
-//                    pressDx = (int) (x - startX);
-//                    invalidate();
-//                    return true;
-//                }
-//                if (x >= endX - additionWidth) {
-//                    if (delegate != null) {
-//                        delegate.didStartDragging();
-//                    }
-//                    log("pressedRight");
-//                    pressedRight = true;
-//                    pressDx = (int) (x - endX);
-//                    invalidate();
-//                    return true;
-//                }
-//                if (playX - additionWidthPlay <= x && x <= playX + additionWidthPlay) {
-//                    if (delegate != null) {
-//                        delegate.didStartDragging();
-//                    }
-//                    log("pressedPlay");
-//                    pressedPlay = true;
-//                    pressDx = (int) (x - playX);
-//                    invalidate();
-//                    return true;
-//                }
             }
-//            if (startX - additionWidth <= x && x <= startX + additionWidth && y >= 0 && y <= getMeasuredHeight()) {
-//                if (delegate != null) {
-//                    delegate.didStartDragging();
-//                }
-//                log("pressedLeft");
-//                pressedLeft = true;
-//                pressDx = (int) (x - startX);
-//                invalidate();
-//                return true;
-//            } else if (endX - additionWidth <= x && x <= endX + additionWidth && y >= 0 && y <= getMeasuredHeight()) {
-//                if (delegate != null) {
-//                    delegate.didStartDragging();
-//                }
-//                log("pressedRight");
-//                pressedRight = true;
-//                pressDx = (int) (x - endX);
-//                invalidate();
-//                return true;
-//            } else if (playX - additionWidthPlay <= x && x <= playX + additionWidthPlay && y >= 0 && y <= getMeasuredHeight()) {
-//                if (delegate != null) {
-//                    delegate.didStartDragging();
-//                }
-//                log("pressedPlay");
-//                pressedPlay = true;
-//                pressDx = (int) (x - playX);
-//                invalidate();
-//                return true;
-//            }
         } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
             pressedLeft = false;
             pressedRight = false;
@@ -319,25 +231,6 @@ public class VideoRangeSeekBar extends View {
                 delegate.didStopDragging();
             }
             return true;
-//            if (pressedLeft) {
-//                if (delegate != null) {
-//                    delegate.didStopDragging();
-//                }
-//                pressedLeft = false;
-//                return true;
-//            } else if (pressedRight) {
-//                if (delegate != null) {
-//                    delegate.didStopDragging();
-//                }
-//                pressedRight = false;
-//                return true;
-//            } else if (pressedPlay) {
-//                if (delegate != null) {
-//                    delegate.didStopDragging();
-//                }
-//                pressedPlay = false;
-//                return true;
-//            }
         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
             if (pressedPlay) {
                 playX = (int) (x - pressDx);
@@ -460,36 +353,29 @@ public class VideoRangeSeekBar extends View {
         progressLeft = 0.0f;
         progressRight = 1.0f;
         this.frameHandler = handler;
+        videoLength = frameHandler.getDuration();
         invalidate();
     }
 
-//    public void setVideoPath(String path) {
-//        destroy();
-//        mediaMetadataRetriever = new MediaMetadataRetriever();
-//        progressLeft = 0.0f;
-//        progressRight = 1.0f;
-//        try {
-//            mediaMetadataRetriever.setDataSource(path);
-//            String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-//            videoLength = Long.parseLong(duration);
-//        } catch (Exception e) {
-//        }
-//        invalidate();
-//    }
 
-//    public void setVideoSource(Context context, Uri videoUri) {
-//        destroy();
-//        mediaMetadataRetriever = new MediaMetadataRetriever();
-//        progressLeft = 0.0f;
-//        progressRight = 1.0f;
-//        try {
-//            mediaMetadataRetriever.setDataSource(context, videoUri);
-//            String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-//            videoLength = Long.parseLong(duration);
-//        } catch (Exception e) {
-//        }
-//        invalidate();
-//    }
+    @Deprecated
+    public void setVideoPath(String path) {
+        destroy();
+        progressLeft = 0.0f;
+        progressRight = 1.0f;
+        this.frameHandler = new VideoFrameHandler(path);
+        videoLength = frameHandler.getDuration();
+        invalidate();
+    }
+
+    public void setVideoSource(Context context, Uri videoUri) {
+        destroy();
+        progressLeft = 0.0f;
+        progressRight = 1.0f;
+        this.frameHandler = new VideoFrameHandler(context, videoUri);
+        videoLength = frameHandler.getDuration();
+        invalidate();
+    }
 
     public void setOnVideoRangeSeekBarListener(VideoRangeSeekBarListener delegate) {
         this.delegate = delegate;
