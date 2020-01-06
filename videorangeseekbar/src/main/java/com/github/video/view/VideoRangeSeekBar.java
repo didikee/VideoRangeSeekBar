@@ -348,6 +348,10 @@ public class VideoRangeSeekBar extends View {
         whitePaint.setColor(color);
     }
 
+    /**
+     * 推荐使用
+     * @param handler
+     */
     public void startWithHandler(FrameHandler handler) {
         destroy();
         progressLeft = 0.0f;
